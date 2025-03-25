@@ -10,6 +10,7 @@ class ConnectFourAgent:
     - Iteratieve verdieping
     - Transpositietabel caching
     - Verbeterde move ordering
+    - Expliciete check op onmiddellijke winnende zetten
     Deze agent is ontworpen om de best mogelijke zet te vinden en zo moeilijk te verslaan te zijn.
     """
     
@@ -24,13 +25,21 @@ class ConnectFourAgent:
         self.start_time = time.time()
         self.transposition_table = {}  # Reset de transpositietabel voor elke zet
         valid_moves = [c for c in range(board.shape[1]) if self.is_valid_move(board, c)]
+        
+        # 1. Directe check: als er een zet is die direct leidt tot 4 op een rij, speel die!
+        for col in valid_moves:
+            temp_board = board.copy()
+            self.make_move(temp_board, col, self.player)
+            if self.check_win(temp_board, self.player):
+                return col
+
         best_move = valid_moves[0]
         best_score = -math.inf
 
         # Zetvolgorde op basis van afstand tot het centrum (belangrijk in Connect Four)
         valid_moves = sorted(valid_moves, key=lambda col: abs(col - board.shape[1]//2))
         
-        # Iteratieve verdieping: zoek eerst met een geringe diepte, verhoog dan de diepte
+        # 2. Iteratieve verdieping: zoek eerst met een geringe diepte, verhoog dan de diepte
         for depth in range(1, self.max_depth + 1):
             for col in valid_moves:
                 temp_board = board.copy()
@@ -73,7 +82,6 @@ class ConnectFourAgent:
         
         if maximizingPlayer:
             value = -math.inf
-            # Order moves by distance to center voor betere pruning
             valid_moves = sorted(valid_moves, key=lambda col: abs(col - board.shape[1]//2))
             for col in valid_moves:
                 temp_board = board.copy()
