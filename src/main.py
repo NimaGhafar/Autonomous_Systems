@@ -1,29 +1,52 @@
 import numpy as np
 from pettingzoo.classic import connect_four_v3
-from agents import ConnectFourAgent  # importeer je agent (of baseline)
+from agents import MinMaxAgent, RandomAgent, ConnectFourAgent, GreedyAgent
+
+def choose_agent(player=1):
+    """
+    Laat de gebruiker kiezen welke agent hij wil gebruiken.
+    """
+    print("Tegen welke agent wil je spelen?")
+    print("1) MinMaxAgent")
+    print("2) RandomAgent")
+    print("3) ConnectFourAgent (Rule-based)")
+    print("4) GreedyAgent")
+
+    choice = input("Voer je keuze in (1-4): ")
+    if choice == "1":
+        return MinMaxAgent(player=player)
+    elif choice == "2":
+        return RandomAgent(player=player)
+    elif choice == "3":
+        return ConnectFourAgent(player=player)
+    elif choice == "4":
+        return GreedyAgent(player=player)
+    else:
+        print("Ongeldige keuze. Er wordt standaard voor ConnectFourAgent gekozen.")
+        return ConnectFourAgent(player=player)
+
 
 def interactive_game():
     """
     Speel een interactief potje (mens vs. agent) met visuele rendering.
     """
+    agent = choose_agent(player=1) 
+
     env = connect_four_v3.env(render_mode="human")
     env.reset()
-    agent = ConnectFourAgent(player=1)  # Speler 1 = rule-based agent
 
     done = False
     while not done:
-        env.render()  # Toon het bord
+        env.render()
         
         observation = env.observe(env.agent_selection)
         board = observation['observation'][:, :, 0]
         current_player = 1 if env.agent_selection == "player_0" else 2
 
         if current_player == agent.player:
-            # Agent zet
             action = agent.select_action(board)
             env.step(action)
         else:
-            # Menselijke speler
             user_input = input("Kies een kolom (0-6): ")
             try:
                 col = int(user_input)
@@ -34,7 +57,6 @@ def interactive_game():
         
         done = any(env.terminations.values()) or any(env.truncations.values())
     
-    # Eindsituatie
     env.render()
     reward_p0 = env.rewards["player_0"]
     reward_p1 = env.rewards["player_1"]
@@ -52,5 +74,4 @@ def interactive_game():
 
 
 if __name__ == "__main__":
-    # Als je in de terminal/command line `python main.py` doet, start het interactieve spel
     interactive_game()
