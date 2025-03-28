@@ -233,14 +233,18 @@ class DoubleMoveAgent:
         self.player = player
 
     def select_action(self, board):
-        # Probeer dubbele zet te creëren
+        # Probeer dubbele zet te creëren in twee opeenvolgende beurten
         for col in range(board.shape[1]):
             if self.is_valid_move(board, col):
                 temp_board = board.copy()
                 self.make_move(temp_board, col, self.player)
-                if self.count_winning_moves(temp_board, self.player) > 1:
-                    return col
-        
+                # Controleer of de volgende zet in dezelfde kolom mogelijk is
+                if self.is_valid_move(temp_board, col):
+                    temp_board_next = temp_board.copy()
+                    self.make_move(temp_board_next, col, self.player)
+                    if self.check_win(temp_board_next, self.player):
+                        return col
+
         # Blokkeer tegenstander
         opponent = 3 - self.player
         for col in range(board.shape[1]):
@@ -249,7 +253,7 @@ class DoubleMoveAgent:
                 self.make_move(temp_board, col, opponent)
                 if self.count_winning_moves(temp_board, opponent) > 0:
                     return col
-        
+
         # Probeer weer dubbele zet te creëren
         for col in range(board.shape[1]):
             if self.is_valid_move(board, col):
