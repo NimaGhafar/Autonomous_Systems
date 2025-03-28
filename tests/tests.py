@@ -1,11 +1,11 @@
 import unittest
 import numpy as np
-from src.agents import ConnectFourAgent
+from src.agents import MinMaxAgent
 
 class TestConnectFourAgent(unittest.TestCase):
 
     def setUp(self):
-        self.agent = ConnectFourAgent(player=1)
+        self.agent = MinMaxAgent(player=1)
 
     def test_winning_move(self):
         # Maak een bord waar speler 1 (agent) bijna wint

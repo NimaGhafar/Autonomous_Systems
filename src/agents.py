@@ -3,21 +3,20 @@ import math
 import random
 import time
 
-class ConnectFourAgent:
+class MinMaxAgent:
     """
-    Een ultra-sterke Connect Four agent met:
+    Deze agent doet het volgende om Connect Four te spelen:
     - Minimax met alpha-beta pruning
     - Iteratieve verdieping
     - Transpositietabel caching
     - Verbeterde move ordering
     - Expliciete check op onmiddellijke winnende zetten
-    Deze agent is ontworpen om de best mogelijke zet te vinden en zo moeilijk te verslaan te zijn.
     """
     
     def __init__(self, player, max_depth=12, time_limit=5.0):
         self.player = player
         self.max_depth = max_depth      # Maximale zoekdiepte
-        self.time_limit = time_limit    # Tijdslimiet per zet (in seconden)
+        self.time_limit = time_limit    # Tijdslimiet per zet in seconden
         self.start_time = None
         self.transposition_table = {}
 
@@ -36,7 +35,7 @@ class ConnectFourAgent:
         best_move = valid_moves[0]
         best_score = -math.inf
 
-        # Zetvolgorde op basis van afstand tot het centrum (belangrijk in Connect Four)
+        # Zetvolgorde op basis van afstand tot het centrum 
         valid_moves = sorted(valid_moves, key=lambda col: abs(col - board.shape[1]//2))
         
         # 2. Iteratieve verdieping: zoek eerst met een geringe diepte, verhoog dan de diepte
@@ -56,7 +55,6 @@ class ConnectFourAgent:
         return best_move
 
     def minimax(self, board, depth, alpha, beta, maximizingPlayer):
-        # Als de tijd op is, geef een evaluatie terug
         if time.time() - self.start_time > self.time_limit:
             return self.evaluate_board(board)
 
@@ -76,7 +74,7 @@ class ConnectFourAgent:
                 elif self.check_win(board, 3 - self.player):
                     return -1000000
                 else:
-                    return 0  # Gelijkspel
+                    return 0  
             else:
                 return self.evaluate_board(board)
         
@@ -106,11 +104,10 @@ class ConnectFourAgent:
             return value
 
     def board_to_tuple(self, board):
-        """Converteer het bord naar een tuple zodat het als sleutel in de transpositietabel gebruikt kan worden."""
+        """Zet het bord om naar een tuple zodat je het kunt gebruiken als sleutel in een soort geheugenlijst (de transpositietabel)."""
         return tuple(map(tuple, board))
 
     def is_terminal_node(self, board):
-        # Terminale staat: als iemand gewonnen heeft of er geen geldige zetten meer zijn.
         return (self.check_win(board, self.player) or 
                 self.check_win(board, 3 - self.player) or 
                 all(board[0][c] != 0 for c in range(board.shape[1])))
@@ -169,7 +166,7 @@ class ConnectFourAgent:
             score += 10
 
         if window.count(opponent) == 3 and window.count(0) == 1:
-            score -= 120  # Krachtige tegenmaatregel
+            score -= 120 
         
         return score
 
@@ -223,7 +220,7 @@ class RandomAgent:
 
 class DoubleMoveAgent:
     """
-    Een rule-based agent voor Connect Four: 
+    Deze agent doet het volgende om Connect Four te spelen:
     1. Probeer een dubbele zet te maken.
     2. Blokkeer de tegenstander.
     3. Anders: random geldige zet.
@@ -302,3 +299,37 @@ class DoubleMoveAgent:
                 if all(board[row + i][col - i] == player for i in range(4)):
                     return True
         return False
+
+class GreedyAgent:
+    """
+    Deze agent doet het volgende om Connect Four te spelen:
+    1. Kijkt naar de score na één zet.
+    """
+    def __init__(self, player):
+        self.player = player
+
+    def select_action(self, board):
+        valid_moves = [c for c in range(board.shape[1]) if board[0][c] == 0]
+        best_score = -float('inf')
+        best_move = valid_moves[0]
+
+        for col in valid_moves:
+            temp_board = board.copy()
+            self.make_move(temp_board, col, self.player)
+            score = self.evaluate_board(temp_board)
+            if score > best_score:
+                best_score = score
+                best_move = col
+
+        return best_move
+
+    def make_move(self, board, col, player):
+        for row in reversed(range(board.shape[0])):
+            if board[row][col] == 0:
+                board[row][col] = player
+                break
+
+    def evaluate_board(self, board):
+        player_count = np.count_nonzero(board == self.player)
+        opponent_count = np.count_nonzero(board == (3 - self.player))
+        return player_count - opponent_count
