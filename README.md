@@ -1,5 +1,3 @@
-# Autonomous_Systems
-
 # Connect Four Agent
 
 Dit project bevat een eenvoudige Connect Four-agent en een interactieve spelomgeving. Je kunt spelen tegen een rule-based agent die strategisch zet, of experimenteren met andere agents.
